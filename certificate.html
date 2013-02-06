@@ -10,14 +10,26 @@
 <body>
   <div id="certificate"></div>
 
+  <script type="text/template" id="tpl-certificate">
+    <h1><%= name =%></h1>
+
+    <p>DOB: <%= dob %></p>
+  </script>
+
   <script type="text/javascript">
     CertificateView = Backbone.View.extend({
+      template:_.template($('#tpl-certificate').html()),
+
       initialize: function() {
         this.render();
       },
 
       render: function() {
-        $(this.el).html("<h1>Guy Incognito</h1><p>DOB: March 2, 1967</p>");
+        var = templateArgs = {
+          name: 'Guy Incognito',
+          dob: 'March 2, 1967'
+        }
+        $(this.el).html(this.template(templateArgs));
       }
     });
 
