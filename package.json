@@ -1,6 +1,6 @@
 {
   "name": "node-network",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The raw pathways upon which a social network can take root and grow",
   "private": true,
   "engines": {
