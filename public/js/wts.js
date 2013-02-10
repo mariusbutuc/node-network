@@ -3,7 +3,7 @@ define(['views/index'], function(indexView){
     indexView.render();
   };
 
-  render {
+  return {
     initialize: initialize
   };
 });
