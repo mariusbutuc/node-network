@@ -73,7 +73,7 @@ app.post('/register', function(req, res) {
 });
 
 app.get('/account/authenticated', function(req, res) {
-  if (res.session.loggedIn) {
+  if (req.session.loggedIn) {
     res.send(200);
   } else {
     res.send(401);
