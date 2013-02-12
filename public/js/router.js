@@ -14,7 +14,7 @@ define(['views/index', 'views/register', 'views/login', 'views/forgotpassword'],
       if ( null != this.currentView ) {
         this.currentView.undelegateEvents();
       }
-      this.currentView = view();
+      this.currentView = view;
       this.currentView.render();
     },
 
