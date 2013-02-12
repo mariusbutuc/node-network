@@ -7,7 +7,7 @@ var express     = require('express'),
 // Import the data layer
 var mongoose = require('mongoose');
 var config = {
-  mail: require('./congig/mail')
+  mail: require('./config/mail')
 };
 
 // Import the accounts
