@@ -1,5 +1,7 @@
-define(['text!templates/login.html'], function(loginTemplate) {
-  var loginView = Backbone.View.extend({
+define(['WtSView', 'text!templates/login.html'], function(WtSView, loginTemplate) {
+  var loginView = WtSView.extend({
+    requireLogin: false,
+
     el: $('#content'),
 
     events: {

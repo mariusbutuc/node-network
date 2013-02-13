@@ -2,6 +2,7 @@ var express     = require('express'),
     app         = express(),
     nodemailer  = require('nodemailer'),
     MemoryStore = require('connect').session.MemoryStore,
+    dbPath      = 'mongodb://localhost/nodebackbone';
     port        = process.env.PORT || 5000;
 
 // Import the data layer
@@ -11,7 +12,9 @@ var config = {
 };
 
 // Import the accounts
-var Account = require('./models/Account')(config, mongoose, nodemailer);
+var models = {
+  Account: require('./models/Account')(config, mongoose, nodemailer)
+}
 
 app.configure(function(){
   app.set('view engine', 'jade');
@@ -20,9 +23,12 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.cookieParser());
   app.use(express.session({
-    secret: 'wts secret key', store: new MemoryStore()
+    secret: 'wts secret key',
+    store: new MemoryStore()
   }));
-  mongoose.connect('mongodb://localhost/nodebackbone');
+  mongoose.connect(dbPath, function onMongooseError(err) {
+    if (err) throw err;
+  });
 });
 
 app.get('/', function(req, res) {
@@ -40,13 +46,14 @@ app.post('/login', function(req, res) {
     return;
   }
 
-  Account.login(email, password, function(success) {
-    if ( !success ) {
+  models.Account.login(email, password, function(account) {
+    if ( !account ) {
       res.send(401);
       return;
     }
     console.log('login was successful');
     req.session.loggedIn = true;
+    req.session.accountId = account._id;
     res.send(200);
   });
 });
@@ -63,12 +70,7 @@ app.post('/register', function(req, res) {
     return;
   }
 
-  // no callback
-  // The actual registration is going to get fired off and handled even after
-  // the user receives an “OK” response from the server.
-  // If there is a problem with the registration, the user will not be
-  // notified during his submission.
-  Account.register(email, password, firstName, lastName);
+  models.Account.register(email, password, firstName, lastName);
   res.send(200);
 });
 
@@ -80,17 +82,65 @@ app.get('/account/authenticated', function(req, res) {
   }
 });
 
+app.get('/accounts/:id/activity', function(req, res) {
+  var accountId = req.params.id == 'me'
+                     ? req.session.accountId
+                     : req.params.id;
+  models.Account.findById(accountId, function(account) {
+    res.send(account.activity);
+  });
+});
+
+app.get('/accounts/:id/status', function(req, res) {
+  var accountId = req.params.id == 'me'
+                     ? req.session.accountId
+                     : req.params.id;
+  models.Account.findById(accountId, function(account) {
+    res.send(account.status);
+  });
+});
+
+app.post('/accounts/:id/status', function(req, res) {
+  var accountId = req.params.id == 'me'
+                     ? req.session.accountId
+                     : req.params.id;
+  models.Account.findById(accountId, function(account) {
+    status = {
+      name: account.name,
+      status: req.param('status', '')
+    };
+    account.status.push(status);
+
+    // Push the status to all friends
+    account.activity.push(status);
+    account.save(function (err) {
+      if (err) {
+        console.log('Error saving account: ' + err);
+      }
+    });
+  });
+  res.send(200);
+});
+
+app.get('/accounts/:id', function(req, res) {
+  var accountId = req.params.id == 'me'
+                     ? req.session.accountId
+                     : req.params.id;
+  models.Account.findById(accountId, function(account) {
+    res.send(account);
+  });
+});
+
 app.post('/forgotpassword', function(req, res) {
   var hostname          = req.headers.host;
   var resetPasswordUrl  = 'http://' + hostname + '/resetPassword';
   var email             = req.param('email', null);
-
   if ( null === email || email.length < 1 ) {
     res.send(400);
     return;
   }
 
-  Account.forgotPassword(email, resetPasswordUrl, function(success) {
+  models.Account.forgotPassword(email, resetPasswordUrl, function(success) {
     if (success) {
       res.send(200);
     } else {
@@ -108,9 +158,8 @@ app.get('/resetPassword', function(req, res) {
 app.post('/resetPassword', function(req, res) {
   var accountId = req.param('accountId', null);
   var password  = req.param('password', null);
-
   if ( null != accountId && null != password ) {
-    Account.changePassword(accountId, password);
+    models.Account.changePassword(accountId, password);
   }
   res.render('resetPasswordSuccess.jade');
 });

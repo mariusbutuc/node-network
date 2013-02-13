@@ -5,7 +5,7 @@ define(['WtSView', 'text!templates/forgotpassword.html'], function(WtSView, forg
     el: $('#content'),
 
     events: {
-      'submit form': 'password'
+      "submit form": "password"
     },
 
     password: function() {
@@ -14,7 +14,6 @@ define(['WtSView', 'text!templates/forgotpassword.html'], function(WtSView, forg
       }, function(data) {
         console.log(data);
       });
-
       return false;
     },
 

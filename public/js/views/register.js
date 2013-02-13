@@ -1,5 +1,5 @@
-define(['text!templates/register.html'], function(registerTemplate) {
-  var registerView = Backbone.View.extend({
+define(['WtSView', 'text!templates/register.html'], function(WtSView, registerTemplate) {
+  var registerView = WtSView.extend({
     el: $('#content'),
 
     events: {
